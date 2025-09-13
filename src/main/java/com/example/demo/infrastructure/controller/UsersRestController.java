@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.application.exception.EmailAlreadyExistsException;
+import com.example.demo.application.exception.EmailNotFoundException;
 import com.example.demo.application.port.in.CreateUserUseCase;
 import com.example.demo.application.port.in.GetAllUsersUseCase;
 import com.example.demo.application.port.in.GetUserUseCase;
@@ -31,24 +33,27 @@ public class UsersRestController {
 	private final CreateUserUseCase createUserUseCase;
 	private final GetUserUseCase getUserUseCase;
 	private final GetAllUsersUseCase getAllUsersUseCase;
-	
-	
+
 	@GetMapping
 	public ResponseEntity<?> getUsers(@RequestParam(required = false) String email) {
-	    try {
-	        if (email != null && !email.isBlank()) {
-	            UserDto userDto = getUserUseCase.GetUserByEmail(email);
-	            return ResponseEntity.ok(userDto);
-	            
-	        } else {
-	            List<UserDto> users = getAllUsersUseCase.getAllUsers();
-	            return ResponseEntity.ok(users);
-	            
-	        }
-	    } catch (Exception e) {
-	        FailureResponseDto failureResponse = new FailureResponseDto(e.getMessage());
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(failureResponse);
-	    }
+		try {
+			if (email != null && !email.isBlank()) {
+				UserDto userDto = getUserUseCase.GetUserByEmail(email);
+				return ResponseEntity.ok(userDto);
+
+			} else {
+				List<UserDto> users = getAllUsersUseCase.getAllUsers();
+				return ResponseEntity.ok(users);
+
+			}
+		} catch (EmailNotFoundException ex) {
+			FailureResponseDto failureResponse = new FailureResponseDto(ex.getMessage());
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(failureResponse);
+
+		} catch (Exception e) {
+			FailureResponseDto failureResponse = new FailureResponseDto(e.getMessage());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(failureResponse);
+		}
 	}
 
 	@PostMapping
@@ -61,9 +66,14 @@ public class UsersRestController {
 			}
 
 			return ResponseEntity.ok(successResponse);
+			
+		} catch (EmailAlreadyExistsException ex) {
+			FailureResponseDto failureResponse = new FailureResponseDto(ex.getMessage());
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(failureResponse);
+
 		} catch (Exception e) {
 			FailureResponseDto failureResponse = new FailureResponseDto(e.getMessage());
-			return ResponseEntity.badRequest().body(failureResponse);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(failureResponse);
 		}
 
 	}

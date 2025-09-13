@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
+import com.example.demo.application.exception.EmailAlreadyExistsException;
+import com.example.demo.application.exception.EmailNotFoundException;
 import com.example.demo.application.port.in.CreateUserUseCase;
 import com.example.demo.application.port.in.GetAllUsersUseCase;
 import com.example.demo.application.port.in.GetUserUseCase;
@@ -24,7 +26,7 @@ public class UserService implements CreateUserUseCase, GetUserUseCase, GetAllUse
 	@Override
 	public User CreateUser(UserRequest userRequest) throws Exception {
 		UserDto user = userRepositoryPort.findByEmail(userRequest.getEmail());
-		if (user != null) throw new Exception("El email ya está registrado.");
+		if (user != null) throw new EmailAlreadyExistsException("El email ya está registrado.");
 		
 		return userRepositoryPort.save(userRequest);
 	}
@@ -32,7 +34,7 @@ public class UserService implements CreateUserUseCase, GetUserUseCase, GetAllUse
 	@Override
 	public UserDto GetUserByEmail(String email) throws Exception {
 		UserDto user = userRepositoryPort.findByEmail(email);
-		if (user == null) throw new Exception("El email " + email + " no existe");
+		if (user == null) throw new EmailNotFoundException("El email " + email + " no existe");
 		
 		return user;
 	}
