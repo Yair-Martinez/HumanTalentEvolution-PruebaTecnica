@@ -1,5 +1,6 @@
 package com.example.demo.application.port.out;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
@@ -35,6 +36,14 @@ public class JpaUserRepositoryAdapter implements UserRepositoryPort {
 
 		UserDto userDto = UserMapper.fromUserEntityToUserDto(userEntity);
 		return userDto;
+	}
+
+	@Override
+	public List<UserDto> findAllUsers() {
+		List<UserEntity> usersEntities = userRepository.findAll();
+		List<UserDto> usersDto = UserMapper.fromListUserEntityToListUserDto(usersEntities);
+
+		return usersDto;
 	}
 
 }

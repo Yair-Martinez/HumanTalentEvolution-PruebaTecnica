@@ -1,10 +1,12 @@
 package com.example.demo.application.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
 import com.example.demo.application.port.in.CreateUserUseCase;
+import com.example.demo.application.port.in.GetAllUsersUseCase;
 import com.example.demo.application.port.in.GetUserUseCase;
 import com.example.demo.application.port.out.UserRepositoryPort;
 import com.example.demo.domain.model.User;
@@ -15,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class UserService implements CreateUserUseCase, GetUserUseCase {
+public class UserService implements CreateUserUseCase, GetUserUseCase, GetAllUsersUseCase {
 	
 	private final UserRepositoryPort userRepositoryPort;
 
@@ -33,6 +35,12 @@ public class UserService implements CreateUserUseCase, GetUserUseCase {
 		if (user == null) throw new Exception("El email " + email + " no existe");
 		
 		return user;
+	}
+
+	@Override
+	public List<UserDto> getAllUsers() {
+		List<UserDto> usersDto = userRepositoryPort.findAllUsers();
+		return usersDto;
 	}
 
 }
