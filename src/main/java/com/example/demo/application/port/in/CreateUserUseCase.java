@@ -5,5 +5,5 @@ import com.example.demo.infrastructure.controller.request.UserRequest;
 
 public interface CreateUserUseCase {
 
-	User CreateUser(UserRequest userRequest);
+	User CreateUser(UserRequest userRequest) throws Exception;
 }

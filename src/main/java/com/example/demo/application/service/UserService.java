@@ -20,7 +20,10 @@ public class UserService implements CreateUserUseCase, GetUserUseCase {
 	private final UserRepositoryPort userRepositoryPort;
 
 	@Override
-	public User CreateUser(UserRequest userRequest) {
+	public User CreateUser(UserRequest userRequest) throws Exception {
+		UserDto user = userRepositoryPort.findByEmail(userRequest.getEmail());
+		if (user != null) throw new Exception("El email ya está registrado.");
+		
 		return userRepositoryPort.save(userRequest);
 	}
 
