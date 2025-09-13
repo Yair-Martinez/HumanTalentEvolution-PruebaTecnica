@@ -22,18 +22,33 @@ import com.example.demo.infrastructure.controller.dto.SuccessResponseDto;
 import com.example.demo.infrastructure.controller.dto.UserDto;
 import com.example.demo.infrastructure.controller.request.UserRequest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Tag(name = "Usuarios", description = "Se encarga de las operaciones relacionadas con los usuarios.")
 public class UsersRestController {
 
 	private final CreateUserUseCase createUserUseCase;
 	private final GetUserUseCase getUserUseCase;
 	private final GetAllUsersUseCase getAllUsersUseCase;
 
+	@Operation(summary = "Obtener usuarios", description = "Devuelve todos los usuarios registrados o uno específico si se proporciona el parámetro 'email'.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Respuesta satisfactoria - lista de usuarios o único usuario.", 
+				content = @Content(mediaType = "application/json", schema = @Schema(oneOf = {UserDto.class, UserDto[].class }))),
+			@ApiResponse(responseCode = "404", description = "Usuario no encontrado.", 
+				content = @Content(mediaType = "application/json", schema = @Schema(implementation = FailureResponseDto.class))),
+			@ApiResponse(responseCode = "500", description = "Error interno.", 
+				content = @Content(mediaType = "application/json", schema = @Schema(implementation = FailureResponseDto.class)))})
 	@GetMapping
 	public ResponseEntity<?> getUsers(@RequestParam(required = false) String email) {
 		try {
@@ -56,6 +71,14 @@ public class UsersRestController {
 		}
 	}
 
+	@Operation(summary = "Crear usuarios", description = "Crea un nuevo usuario con los datos proporcionados en el cuerpo de la solicitud.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "201", description = "Usuario creado exitosamente.", 
+				content = @Content(mediaType = "application/json", schema = @Schema(implementation = SuccessResponseDto.class))),
+			@ApiResponse(responseCode = "400", description = "Solicitud incorrecta. Verifique los datos enviados.", 
+				content = @Content(mediaType = "application/json", schema = @Schema(implementation = FailureResponseDto.class))),
+			@ApiResponse(responseCode = "500", description = "Error interno.", 
+				content = @Content(mediaType = "application/json", schema = @Schema(implementation = FailureResponseDto.class)))})
 	@PostMapping
 	public ResponseEntity<?> saveUser(@Valid @RequestBody UserRequest userRequest) {
 		try {
@@ -66,7 +89,7 @@ public class UsersRestController {
 			}
 
 			return ResponseEntity.ok(successResponse);
-			
+
 		} catch (EmailAlreadyExistsException ex) {
 			FailureResponseDto failureResponse = new FailureResponseDto(ex.getMessage());
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(failureResponse);
