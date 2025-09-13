@@ -1,15 +1,20 @@
 package com.example.demo.infrastructure.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.application.port.in.CreateUserUseCase;
+import com.example.demo.application.port.in.GetUserUseCase;
 import com.example.demo.domain.model.User;
 import com.example.demo.infrastructure.controller.dto.FailureResponseDto;
 import com.example.demo.infrastructure.controller.dto.SuccessResponseDto;
+import com.example.demo.infrastructure.controller.dto.UserDto;
 import com.example.demo.infrastructure.controller.request.UserRequest;
 
 import jakarta.validation.Valid;
@@ -21,6 +26,21 @@ import lombok.RequiredArgsConstructor;
 public class UsersRestController {
 
 	private final CreateUserUseCase createUserUseCase;
+	private final GetUserUseCase getUserUseCase;
+	
+	@GetMapping
+	public ResponseEntity<?> GetUserByEmail(@RequestParam String email) {
+		try {
+			UserDto userDto = getUserUseCase.GetUserByEmail(email);
+			
+			return ResponseEntity.ok(userDto);
+			
+		} catch (Exception e) {
+			FailureResponseDto failureResponse = new FailureResponseDto(e.getMessage());
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(failureResponse);
+		}
+		
+	}
 
 	@PostMapping
 	public ResponseEntity<?> saveUser(@Valid @RequestBody UserRequest userRequest) {
@@ -34,7 +54,7 @@ public class UsersRestController {
 			return ResponseEntity.ok(successResponse);
 		} catch (Exception e) {
 			FailureResponseDto failureResponse = new FailureResponseDto(e.getMessage());
-			return ResponseEntity.ok(failureResponse);
+			return ResponseEntity.badRequest().body(failureResponse);
 		}
 
 	}
