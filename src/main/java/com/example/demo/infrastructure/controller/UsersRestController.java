@@ -34,31 +34,21 @@ public class UsersRestController {
 	
 	
 	@GetMapping
-	public ResponseEntity<?> GetAllUsers() {
-		try {
-			List<UserDto> usersDto = getAllUsersUseCase.getAllUsers();
-			
-			return ResponseEntity.ok(usersDto);
-			
-		} catch (Exception e) {
-			FailureResponseDto failureResponse = new FailureResponseDto(e.getMessage());
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(failureResponse);
-		}
-		
-	}
-	
-	@GetMapping("/user")
-	public ResponseEntity<?> GetUserByEmail(@RequestParam String email) {
-		try {
-			UserDto userDto = getUserUseCase.GetUserByEmail(email);
-			
-			return ResponseEntity.ok(userDto);
-			
-		} catch (Exception e) {
-			FailureResponseDto failureResponse = new FailureResponseDto(e.getMessage());
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(failureResponse);
-		}
-		
+	public ResponseEntity<?> getUsers(@RequestParam(required = false) String email) {
+	    try {
+	        if (email != null && !email.isBlank()) {
+	            UserDto userDto = getUserUseCase.GetUserByEmail(email);
+	            return ResponseEntity.ok(userDto);
+	            
+	        } else {
+	            List<UserDto> users = getAllUsersUseCase.getAllUsers();
+	            return ResponseEntity.ok(users);
+	            
+	        }
+	    } catch (Exception e) {
+	        FailureResponseDto failureResponse = new FailureResponseDto(e.getMessage());
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(failureResponse);
+	    }
 	}
 
 	@PostMapping
